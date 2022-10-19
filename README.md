@@ -56,7 +56,7 @@ Solafuneの[「マルチ解像度画像の車両検出」コンテスト](https:
 
 ## 推論・後処理
 * horizontal/vertical flip TTA + rotate90/180/270 TTA の5通りのTTA
-* n_arch x n_fold x (1 + n_tta) = 3 x 5 x (1 + 5) = 90 の推論結果を、WBF (weighted box fusion)でアンサンブル
+* n_arch x n_fold x (1 + n_tta) = 3 x 5 x (1 + 5) = 90 の推論結果を、WBF (Weighted Boxes Fusion)でアンサンブル
 * NMS・WBFのiou_thresh=0.4
 * 検出閾値は0.5
 * WBF後のbboxの座標を、Pythonのround関数で一番近い整数に丸める
