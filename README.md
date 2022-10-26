@@ -115,7 +115,7 @@ A + B + C | 0.13469 | 0.13700 | 0.13996
     * TTA（horizontal/vertical flip + rotate90/180/270）
 * その後、2種間ほどかけてpseudo labelingを検証
     * 最初は定石通りに、YOLOX-Lをpseudo labelを加えてfinetuneするなどしていたが、OC-Costは改善せず
-    * noisy studentの論文を参考に、YOLOX-Xに強いaugmentaion（mixup, mosaic, randon affine）を加えて学習し、YOLOX-LとアンサンブルするとOC-Costが改善したのでこの方法を採用した
+    * Noisy Studentの論文を参考に、YOLOX-Xに強いaugmentaion（mixup, mosaic, randon affine）を加えて学習し、YOLOX-LとアンサンブルするとOC-Costが改善したのでこの方法を採用した
 * 最後の数日間は、後処理の最適化に取り組んだ：
     * 検出したbboxの面積に対して閾値を設定し、範囲外のbboxは削除する（OC-Costは改善せず）
     * 色々試したがほとんど効果がなく、唯一、bboxの座標値を一番近い整数に丸めることでOC-Costを大きく改善できることに気づいた
