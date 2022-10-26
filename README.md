@@ -55,7 +55,7 @@ Solafuneの[「マルチ解像度画像の車両検出」コンテスト](https:
     * COCO pretrainedのweightで初期化
     * fp16 (amp) で single gpu training（使用メモリは10GBくらい）
     * valに対するOC-Costが最小となるepochを選択
-    * 実装にはmmdetectionを使用
+    * 実装には[mmdetection](https://github.com/open-mmlab/mmdetection)を使用
 
 ### 推論・後処理
 * horizontal/vertical flip TTA + rotate90/180/270 TTA の5通りのTTA
@@ -101,6 +101,7 @@ A + B + C | 0.13469 | 0.13700 | 0.13996
 
 * 1週間ほどかけてmmdetectionのCOCO APが高いモデルを色々試し、OC-Costが最も良かったYOLOX-Lをベースラインモデルとして選定
     * [DetectoRS](https://github.com/open-mmlab/mmdetection/tree/master/configs/detectors)や[UniverseNet](https://github.com/shinya7y/UniverseNet/tree/master/configs/universenet)などを試したが、YOLOX-Lより精度・速度の両面で劣っていたので採用せず
+    * mmdetectionを選んだ理由としては、多少使い慣れていたのと、色々なモデルがサポートされているのでアンサンブルが容易そうだと考えたため（結局YOLOXしか使わず）
 * 2週間ほどかけて、YOLOX-Lのハイパラ（主にデータ拡張）を最適化：
     * random resizeの範囲
     * horizontal/vertical flip
