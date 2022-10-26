@@ -6,7 +6,9 @@ Solafuneの[「マルチ解像度画像の車両検出」コンテスト](https:
 > cf. @solafune (https://solafune.com)
 > コンテストの参加以外の目的とした利用及び商用利用は禁止されています。商用利用・その他当コンテスト以外で利用したい場合はお問い合わせください。(https://solafune.com)
 
-## サマリ
+## 1. Final Approach
+
+### サマリ
 * 500x375解像度の画像は2倍に拡大し、すべての画像で同じくらいの地上分解能になるようにした
 * YOLOX-Lと、2通りのハイパラで学習したYOLOX-XをWBF (Weighted Boxes Fusion) によってアンサンブル
 * YOLOX-Xを学習する際には、YOLOX-Lによるpseudo labelを学習データに混ぜ、強めのaugmentationをかけた（Noisy Studentの要領）
@@ -14,17 +16,17 @@ Solafuneの[「マルチ解像度画像の車両検出」コンテスト](https:
 * WBF・NMSのIoU閾値をやや小さめ（0.4）に設定することで、OC-Costが0.003ほど改善
 * WBF後のbboxの座標を、Pythonのround関数で一番近い整数に丸めるとOC-Costが大きく改善した（floatに比べて0.005ほど改善）
 
-## 前処理
+### 前処理
 * 学習データをrandom splitで5 foldに分割
 * 500x375解像度の画像を縦横2倍に拡大（Lanczos）し、600x500解像度の画像と同程度の地上分解能になるようにした
 
-## データ拡張
+### データ拡張
 * random crop（480x480）
 * horizontal and vertical flip
 * rotate90/180/270
 * 上記に加え、モデルごとに追加のaugmentationを適用（以下で説明）
 
-## モデル
+### モデル
 * モデルA
     * YOLOX-L
     * 100 epoch 学習
@@ -48,20 +50,21 @@ Solafuneの[「マルチ解像度画像の車両検出」コンテスト](https:
         * Mixup
 * モデルA〜Cに共通の学習設定
     * batch size: 4
-    * lrは6.25e-4で固定（annealing, stepも試したが改善せず）
+    * optimizer: SGD(momentum=0.9, weight_decay=5e-4, nesterov=True)
+    * lr: 6.25e-4で固定（annealing, stepも試したが改善せず）
     * COCO pretrainedのweightで初期化
     * fp16 (amp) で single gpu training（使用メモリは10GBくらい）
     * valに対するOC-Costが最小となるepochを選択
     * 実装にはmmdetectionを使用
 
-## 推論・後処理
+### 推論・後処理
 * horizontal/vertical flip TTA + rotate90/180/270 TTA の5通りのTTA
 * n_arch x n_fold x (1 + n_tta) = 3 x 5 x (1 + 5) = 90 の推論結果を、WBF (Weighted Boxes Fusion)でアンサンブル
 * NMS・WBFのiou_thresh=0.4
 * 検出閾値は0.5
 * WBF後のbboxの座標を、Pythonのround関数で一番近い整数に丸める
 
-## Ablation
+### Ablation
 
 Model | CV | Public LB | Private LB
 -- | -- | -- | --
@@ -93,3 +96,26 @@ A + B + C | 0.13469 | 0.13700 | 0.13996
 * 分解能を近づける（500x375解像度の画像を縦横2倍に拡大する）効果は、ちゃんと定量評価できていない
     * アノテーションされたbboxのサイズ分布を見ると、2.3倍ほどの拡大率が最適に見えたが、拡大率2.3倍よりも2倍の方がCVは良かった
     * 対象物体が小さいので、画像を整数倍で拡大しないと物体の境界が曖昧になってしまうのが原因？
+
+## 2. Solution Development
+
+* 1週間ほどかけてmmdetectionのCOCO APが高いモデルを色々試し、OC-Costが最も良かったYOLOX-Lをベースラインモデルとして選定
+    * [DetectoRS](https://github.com/open-mmlab/mmdetection/tree/master/configs/detectors)や[UniverseNet](https://github.com/shinya7y/UniverseNet/tree/master/configs/universenet)などを試したが、YOLOX-Lより精度・速度の両面で劣っていたので採用せず
+* 2~3週間ほどかけて、YOLOX-Lのハイパラ（主にデータ拡張）を最適化：
+    * random resizeの範囲
+    * horizontal/vertical flip
+    * rotate90/180/270
+    * mixup（YOLOX-Lでは採用せず）
+    * mosaic（YOLOX-Lでは採用せず）
+    * color jitter（精度が上がらなかったので採用せず）
+    * lr schedule（annealing, stepなど試したが、6.25e-4で固定がベストだった）
+    * 画像の拡大（車両がかなり小さいので、入力画像のサイズを3倍以上に拡大するというのを試したが、train lossが収束せず断念）
+* YOLOX-Lでの精度が頭打ちとなったところで、1週間ほどかけて推論まわりのハイパラを最適化：
+    * WBF・NMSのIoU閾値の調整
+    * TTA（horizontal/vertical flip + rotate90/180/270）
+* その後、2種間ほどかけてpseudo labelingを検証
+    * 最初は定石通りに、YOLOX-Lをpseudo labelを加えてfinetuneするなどしていたが、OC-Costは改善せず
+    * noisy studentの論文を参考に、YOLOX-Xに強いaugmentaion（mixup, mosaic, randon affine）を加えて学習し、YOLOX-LとアンサンブルするとOC-Costが改善したのでこの方法を採用した
+* 最後の数日間は、後処理の最適化に取り組んだ：
+    * 検出したbboxの面積に対して閾値を設定し、範囲外のbboxは削除する（OC-Costは改善せず）
+    * 色々試したがほとんど効果がなく、唯一、bboxの座標値を一番近い整数に丸めることでOC-Costを大きく改善できることに気づいた
