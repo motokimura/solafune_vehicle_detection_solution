@@ -10,8 +10,8 @@ Solafuneの[「マルチ解像度画像の車両検出」コンテスト](https:
 
 ### サマリ
 * 500x375解像度の画像は2倍に拡大し、すべての画像で同じくらいの地上分解能になるようにした
-* YOLOX-Lと、2通りのハイパラで学習したYOLOX-XをWBF (Weighted Boxes Fusion) によってアンサンブル
-* YOLOX-Xを学習する際には、YOLOX-Lによるpseudo labelを学習データに混ぜ、強めのaugmentationをかけた（Noisy Studentの要領）
+* YOLOX-Lと、2通りのハイパラで学習したYOLOX-Xを[WBF (Weighted Boxes Fusion)](https://arxiv.org/abs/1910.13302)によってアンサンブル
+* YOLOX-Xを学習する際には、YOLOX-Lによるpseudo labelを学習データに混ぜ、強めのaugmentationをかけた（[Noisy Student](https://arxiv.org/abs/1911.04252)の要領）
 * 大型トラックなどの誤検出を防ぐ狙いで、学習の後半ではrandom resizeの範囲を小さくする（OC-Costが0.001~0.002ほど改善）
 * WBF・NMSのIoU閾値をやや小さめ（0.4）に設定することで、OC-Costが0.003ほど改善
 * WBF後のbboxの座標を、Pythonのround関数で一番近い整数に丸めるとOC-Costが大きく改善した（floatに比べて0.005ほど改善）
