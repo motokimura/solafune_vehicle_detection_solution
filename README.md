@@ -101,7 +101,7 @@ A + B + C | 0.13469 | 0.13700 | 0.13996
 
 * 1週間ほどかけてmmdetectionのCOCO APが高いモデルを色々試し、OC-Costが最も良かったYOLOX-Lをベースラインモデルとして選定
     * [DetectoRS](https://github.com/open-mmlab/mmdetection/tree/master/configs/detectors)や[UniverseNet](https://github.com/shinya7y/UniverseNet/tree/master/configs/universenet)などを試したが、YOLOX-Lより精度・速度の両面で劣っていたので採用せず
-* 2~3週間ほどかけて、YOLOX-Lのハイパラ（主にデータ拡張）を最適化：
+* 2週間ほどかけて、YOLOX-Lのハイパラ（主にデータ拡張）を最適化：
     * random resizeの範囲
     * horizontal/vertical flip
     * rotate90/180/270
@@ -113,7 +113,7 @@ A + B + C | 0.13469 | 0.13700 | 0.13996
 * YOLOX-Lでの精度が頭打ちとなったところで、1週間ほどかけて推論まわりのハイパラを最適化：
     * WBF・NMSのIoU閾値の調整
     * TTA（horizontal/vertical flip + rotate90/180/270）
-* その後、2種間ほどかけてpseudo labelingを検証
+* その後、1~2種間ほどかけてpseudo labelingを検証
     * 最初は定石通りに、YOLOX-Lをpseudo labelを加えてfinetuneするなどしていたが、OC-Costは改善せず
     * Noisy Studentの論文を参考に、YOLOX-Xに強いaugmentaion（mixup, mosaic, randon affine）を加えて学習し、YOLOX-LとアンサンブルするとOC-Costが改善したのでこの方法を採用した
 * 最後の数日間は、後処理の最適化に取り組んだ：
