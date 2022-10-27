@@ -66,7 +66,7 @@ Solafuneの[「マルチ解像度画像の車両検出」コンテスト](https:
 
 ### Ablation
 
-Model | CV | Public LB | Private LB
+Model | OC-Cost (CV) ↓ | OC-Cost (public LB) ↓ | OC-Cost (private LB) ↓
 -- | -- | -- | --
 A (yolox-l) | 0.13870 | 0.13717 | 0.14110
 B (yolox-x) | 0.13627 | 0.13760 | 0.14146
