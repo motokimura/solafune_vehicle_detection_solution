@@ -66,13 +66,15 @@ Solafuneの[「マルチ解像度画像の車両検出」コンテスト](https:
 
 ### Ablation
 
-Model | OC-Cost (CV) ↓ | OC-Cost (public LB) ↓ | OC-Cost (private LB) ↓
--- | -- | -- | --
-A (yolox-l) | 0.13870 | 0.13717 | 0.14110
-B (yolox-x) | 0.13627 | 0.13760 | 0.14146
-C (yolox-x, weaker augmentation) | 0.13555 | 0.13776 | 0.14120
-A + B | 0.13532 | 0.13664 | 0.14031
-A + B + C | 0.13469 | 0.13700 | 0.13996
+Model | OC-Cost (CV) ↓ | OC-Cost (public LB) ↓ | OC-Cost (private LB) ↓ | mAP※ (CV) ↑
+-- | -- | -- | -- | --
+A (YOLOX-L) | 0.13870 | 0.13717 | 0.14110 | 0.542
+B (YOLOX-X) | 0.13627 | 0.13760 | 0.14146 | 0.552
+C (YOLOX-X) | 0.13555 | 0.13776 | 0.14120 | 0.553
+A + B | 0.13532 | 0.13664 | 0.14031 | - 
+A + B + C | 0.13469 | 0.13700 | 0.13996 | - 
+
+(※) mAPはTTAおよびbbox座標のround処理をせずに評価
 
 * LBでは、単体モデルとしてはYOLOX-Lが最も性能が良く（表の1行目）、YOLOX-Xとアンサンブルしなくてもprivateで1st
 * YOLOX-X（2・3行目）は、YOLOX-L（1行目）に比べてCVは良いが、LBは改善していない
